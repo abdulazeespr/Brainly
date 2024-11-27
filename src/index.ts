@@ -2,11 +2,12 @@ import express, { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import {z} from 'zod'
 import bcrypt from 'bcrypt'
-import { UserModel } from './db';
+import { ContentModel, UserModel } from './db';
 import cors from 'cors'
 import { JWT_SCERET } from './config';
 import { RequestHandler } from 'express';
 import { any } from 'zod';
+import { authMiddleware } from './middleware';
 const app = express()
 
 app.use(express.json())
@@ -126,17 +127,94 @@ app.post("/api/v1/signin",async (req,res)=>{
 
 })
 
-app.post("/api/v1/content",(req,res)=>{
+app.post("/api/v1/content",authMiddleware,async (req,res)=>{
+
+    const {type,link,title,tags} = req.body;
+
+    try{
+   await ContentModel.create({
+        type,
+        link,
+        title,
+        tags,
+            //@ts-ignore
+        userId:req.userId
+
+    })
+
+    res.status(200).json({
+        message:"Content is added"
+    })
+    return
+}catch(e){
+    res.status(501).json({
+        message:"server error"
+    })
+    return
+}
+     
+
+    
+
+
 
 })
 
-app.get("/api/v1/content",(req,res)=>{
+app.get("/api/v1/content",authMiddleware,async (req,res)=>{
+//@ts-ignore
+  const userId = req.userId;
+  try {
+  const Content = await ContentModel.find({
+       userId
+  })
+
+  res.status(200).json({
+    content :Content
+  })
+  return
+
+
+  }catch(e){
+
+    res.status(501).json({
+        message:"server error"
+    })
+    return
+
+
+  }
+  
+
 
 })
 
-app.delete("api/v1/content",(req,res)=>{
+app.delete("api/v1/content",authMiddleware,async (req,res)=>{
 
+    const contentId = req.body.contentId;
+    try {
+    await ContentModel.deleteMany({
+        contentId,
+        //@ts-ignore
+        userId: req.userId
+    })
+
+    res.json({
+        message: "Deleted"
+    })
+   return
+
+}catch(e){
+
+    res.status(501).json({
+        message:"server error"
+    })
+    return
+
+
+}
 })
+
+
 
 app.post("/api/v1/brain/share",(req,res)=>{
 
