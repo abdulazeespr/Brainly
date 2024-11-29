@@ -2,12 +2,13 @@ import express, { Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 import {z} from 'zod'
 import bcrypt from 'bcrypt'
-import { ContentModel, UserModel } from './db';
+import { ContentModel, LinkModel, UserModel } from './db';
 import cors from 'cors'
 import { JWT_SCERET } from './config';
-import { RequestHandler } from 'express';
+
 import { any } from 'zod';
 import { authMiddleware } from './middleware';
+import { RandomString } from './utilis';
 const app = express()
 
 app.use(express.json())
@@ -129,15 +130,15 @@ app.post("/api/v1/signin",async (req,res)=>{
 
 app.post("/api/v1/content",authMiddleware,async (req,res)=>{
 
-    const {type,link,title,tags} = req.body;
+    const {type,link,title} = req.body;
+
 
     try{
    await ContentModel.create({
         type,
         link,
         title,
-        tags,
-            //@ts-ignore
+   //@ts-ignore
         userId:req.userId
 
     })
@@ -147,6 +148,7 @@ app.post("/api/v1/content",authMiddleware,async (req,res)=>{
     })
     return
 }catch(e){
+    console.log(e)
     res.status(501).json({
         message:"server error"
     })
@@ -189,11 +191,11 @@ app.get("/api/v1/content",authMiddleware,async (req,res)=>{
 })
 
 app.delete("api/v1/content",authMiddleware,async (req,res)=>{
-
+     console.log("hi here ..")
     const contentId = req.body.contentId;
     try {
-    await ContentModel.deleteMany({
-        contentId,
+    await ContentModel.deleteOne({
+       _id: contentId,
         //@ts-ignore
         userId: req.userId
     })
@@ -216,11 +218,89 @@ app.delete("api/v1/content",authMiddleware,async (req,res)=>{
 
 
 
-app.post("/api/v1/brain/share",(req,res)=>{
+app.post("/api/v1/brain/share",authMiddleware,async (req,res)=>{
+
+    const {share} = req.body;
+    try{
+    if(share){
+
+        const hashString = RandomString(10)
+
+        await LinkModel.create({
+            //@ts-ignore
+            userId:req.userId,
+            hash: hashString
+
+        })
+        
+    res.status(200).json({
+        hash : hashString
+    })
+
+    return
+        
+    }else{
+      
+        await LinkModel.deleteOne({
+            //@ts-ignore
+            userId:req.userId
+        })
+
+        res.status(200).json({
+            message :"delete Success"
+        })
+
+    }
+
+}catch(e){
+
+    res.json({
+        message:"invaild input or Server down"
+    })
+  
+}
 
 })
 
-app.get("/api/v1/brain/:shareLink",(req,res)=>{
+app.get("/api/v1/brain/:shareLink",async (req,res)=>{
+
+    const hashLink = req.params.shareLink
+
+    try{
+
+      const link = await LinkModel.findOne({
+        hash :hashLink,
+       })
+
+     if(!link){
+        res.status(411).json({
+            message: "invaild Input"
+        })
+     }
+
+    const content = await ContentModel.find({
+        userId : link?.userId
+    })
+
+    const user = await UserModel.findById(link?.userId)
+
+      res.status(200).json({
+        username:user?.username,
+        content:content
+      })
+
+
+    }catch(e){
+
+
+        res.json({
+            message:"invaild input or Server down"
+        })
+      
+
+    }
+
+
 
 })
 

@@ -8,7 +8,7 @@ const UserSchema = new Schema({
     password:{type:String,required:true}
 })
 
-const contentTypes = ['image','video','article','audio']
+const contentTypes = ['image','video','article','audio','link']
 
 const ContentSchema = new Schema({
     link:{type:String,required:true},
@@ -25,7 +25,7 @@ const TagSchema = new Schema({
 
 const LinkSchema = new Schema({
     hash:{type: String,required:true},
-    userId:{type:Schema.Types.ObjectId,ref:'Link',required:true}
+    userId:{type:Schema.Types.ObjectId,ref:'Link',required:true,unique:true}
 })
 
 
