@@ -20,8 +20,16 @@ app.use(express.json())
 app.use(cors());
 
 
+
+app.get("/",(req,res)=>{
+    res.json({
+        message:"server is up"
+    })
+})
+
 app.post("/api/v1/signup",async (req: Request,res: Response) =>{
    // vadation input,
+
     const reqInputSchema =z.object({
         username:z.string(),
         password:z.string()
