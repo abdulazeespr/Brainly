@@ -342,7 +342,8 @@ app.get("/api/v1/brain/:shareLink",async (req,res)=>{
 
 })
 
+const port = process.env.PORT || 3000;
 
-app.listen(3000,()=>{
-    console.log("server is up")
+app.listen(port, () => {
+    console.log(`server is up on port ${port}`)
 })
