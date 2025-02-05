@@ -3,7 +3,7 @@ import jwt,{JwtPayload} from 'jsonwebtoken'
 import { JWT_SCERET } from './config';
 export const authMiddleware = (req:Request,res:Response,next:NextFunction)=>{
   // @ts-ignore
-   const token = req.body.token
+   const token = req.headers.authorization
 
  const verifyed = jwt.verify(token as string,JWT_SCERET)
 

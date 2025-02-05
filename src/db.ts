@@ -8,10 +8,12 @@ const UserSchema = new Schema({
     password:{type:String,required:true}
 })
 
-const contentTypes = ['image','video','article','audio','link']
+const contentTypes = ['youtube','twitter','link']
 
 const ContentSchema = new Schema({
     link:{type:String,required:true},
+
+
     type:{type:String ,enum:contentTypes,required:true},
     title:{type:String,required:true},
     tags:[{type:Schema.Types.ObjectId,ref:'Tag'}],
